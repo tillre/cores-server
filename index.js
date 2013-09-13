@@ -20,7 +20,8 @@ function createServer(options) {
     },
     api: {
       basePath: '/api'
-    }
+    },
+    auth: false
   };
   options = Hapi.utils.applyToDefaults(defaults, options || {});
 
@@ -45,8 +46,7 @@ function createServer(options) {
       resources: resources,
       handlers: server.app.api.baseHandlers,
       basePath: options.api.basePath,
-      auth: false,
-      debug: true
+      auth: options.auth
     });
 
   }).then(function() {
