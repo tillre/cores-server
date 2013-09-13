@@ -1,0 +1,41 @@
+{
+  "name": "cores-server",
+  "version": "0.0.1",
+  "description": "cores server",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha -R spec ./test",
+    "watch-tests": "./node_modules/mocha/bin/mocha -w ./test"
+  },
+  "keywords": [
+    "couchdb",
+    "cores",
+    "hapi",
+    "api"
+  ],
+  "author": {
+    "name": "skoni"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/skoni/cores.git"
+  },
+  "licenses": [
+    {
+      "type": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  ],
+  "dependencies": {
+    "nano": "3.x.x",
+    "jski": "~0.3.x",
+    "walk-fs": "0.0.x",
+    "kew": "~0.1.7",
+    "hapi": "~1.10.0",
+    "cores": "~0.2.6",
+    "cores-hapi": "~0.2.3"
+  },
+  "devDependencies": {
+    "mocha": "1.x.x"
+  }
+}
