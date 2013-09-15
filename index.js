@@ -18,10 +18,9 @@ function createServer(options) {
       url: 'http://127.0.0.1:5984',
       name: 'cores'
     },
-    api: {
-      basePath: '/api'
-    },
-    auth: false
+    apiPath: '',
+    auth: false,
+    debug: false
   };
   options = Hapi.utils.applyToDefaults(defaults, options || {});
 
@@ -45,7 +44,7 @@ function createServer(options) {
       cores: cores,
       resources: resources,
       handlers: server.app.api.baseHandlers,
-      basePath: options.api.basePath,
+      basePath: options.apiPath,
       auth: options.auth
     });
 
