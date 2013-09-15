@@ -1,6 +1,6 @@
 {
   "name": "cores-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "cores server",
   "main": "index.js",
   "scripts": {

@@ -36,7 +36,7 @@ function createServer(options) {
   var db = Nano(options.db.url).use(options.db.name);
   var cores = Cores(db);
 
-  return loadResources(cores, options.resourceDir).then(function(resources) {
+  return loadResources(cores, options.resourcesDir).then(function(resources) {
 
     server.app.resources = resources;
 
