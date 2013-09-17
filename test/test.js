@@ -14,11 +14,10 @@ describe('cores-server', function() {
 
     it('should pass on payload', function(done) {
       var md = new ApiMiddleware();
-      md.handleAction('load', {}, { name: 'Foo' }, { data: 123 }, function(err, payload) {
-        assert(!err);
+      md.handleAction('load', {}, { name: 'Foo' }, { data: 123 }).then(function(payload) {
         assert(payload.data === 123);
         done();
-      });
+      }, done);
     });
 
 
@@ -29,11 +28,10 @@ describe('cores-server', function() {
         return Q.resolve({ data: 123 });
       });
 
-      md.handleAction('load', {}, { name: 'Foo' }, {}, function(err, payload) {
-        assert(!err);
+      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
         assert(payload.data === 123);
         done();
-      });
+      }, done);
     });
 
 
@@ -49,11 +47,10 @@ describe('cores-server', function() {
         return Q.resolve({ data: payload.data + 1 });
       });
 
-      md.handleAction('load', {}, { name: 'Foo' }, {}, function(err, payload) {
-        assert(!err);
+      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
         assert(payload.data === 2);
         done();
-      });
+      }, done);
     });
   });
 
@@ -109,6 +106,18 @@ describe('cores-server', function() {
         server = s;
         done();
       }, done);
+    });
+
+
+    it('should not create the server when resources not exists', function(done) {
+      createServer(
+        { resourcesDir: __dirname + '/foooo', db: { name: dbName }}
+      ).then(function(s) {
+        assert(false);
+      }, function(err) {
+        assert(Util.isError(err));
+        done();
+      });
     });
 
 
