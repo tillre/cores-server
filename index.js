@@ -49,7 +49,6 @@ function createServer(options) {
     });
 
   }).then(function() {
-
     return server;
   });
 }

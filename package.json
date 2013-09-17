@@ -32,8 +32,8 @@
     "walk-fs": "0.0.x",
     "kew": "~0.1.7",
     "hapi": "~1.10.0",
-    "cores": "~0.3.1",
-    "cores-hapi": "~0.3.0"
+    "cores": "~0.4.0",
+    "cores-hapi": "~0.4.0"
   },
   "devDependencies": {
     "mocha": "1.x.x"
