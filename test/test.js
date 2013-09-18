@@ -25,7 +25,7 @@ describe('cores-server', function() {
       var md = new ApiMiddleware();
 
       md.addHandler('load', 'Foo', function(payload) {
-        return Q.resolve({ data: 123 });
+        return { data: 123 };
       });
 
       md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
@@ -36,21 +36,36 @@ describe('cores-server', function() {
 
 
     it('should call handlers in order', function(done) {
-
       var md = new ApiMiddleware();
 
       md.addHandler('load', 'Foo', function(payload) {
-        return Q.resolve({ data: 1 });
+        return { data: 1 };
       });
 
       md.addHandler('load', 'Foo', function(payload) {
-        return Q.resolve({ data: payload.data + 1 });
+        return { data: payload.data + 1 };
       });
 
       md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
         assert(payload.data === 2);
         done();
       }, done);
+    });
+
+
+    it('should propagate error', function(done) {
+      var md = new ApiMiddleware();
+
+      md.addHandler('load', 'Foo', function(payload) {
+        throw new Error('foo');
+      });
+
+      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
+        assert(false);
+      }, function(err) {
+        assert(Util.isError(err));
+        done();
+      });
     });
   });
 
