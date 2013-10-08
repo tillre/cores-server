@@ -1,6 +1,6 @@
 {
   "name": "cores-server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "cores server",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "kew": "~0.1.7",
     "hapi": "~1.10.0",
     "cores": "~0.4.1",
-    "cores-hapi": "~0.4.1"
+    "cores-hapi": "~0.4.2"
   },
   "devDependencies": {
     "mocha": "1.x.x"
