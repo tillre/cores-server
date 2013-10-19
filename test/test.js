@@ -67,6 +67,26 @@ describe('cores-server', function() {
         done();
       });
     });
+
+
+    it('should include request in context of promise', function(done) {
+      var md = new ApiMiddleware();
+
+      md.addHandler('load', 'Foo', function(payload) {
+        assert(this.getContext());
+        assert(this.getContext().request);
+        assert(this.getContext().request.iAmARequest);
+        return payload;
+      });
+
+      md.handleAction('load', {iAmARequest: true}, { name: 'Foo' }, { data: 123 }).then(function(payload) {
+        assert(this.getContext());
+        assert(this.getContext().request);
+        assert(this.getContext().request.iAmARequest);
+        done();
+      }, done);
+    });
+
   });
 
 
