@@ -24,30 +24,58 @@ describe('cores-server', function() {
     it('should call handler', function(done) {
       var md = new ApiMiddleware();
 
-      md.addHandler('load', 'Foo', function(payload) {
-        return { data: 123 };
+      md.setHandler('load', 'Foo', function(payload) {
+        return { called: true };
       });
 
       md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
-        assert(payload.data === 123);
+        assert(payload.called);
         done();
       }, done);
     });
 
+    it('should call pre handler', function(done) {
+      var md = new ApiMiddleware();
+
+      md.setPreHandler('load', function(payload) {
+        return { called: true };
+      });
+      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
+        assert(payload.called);
+        done();
+      }, done);
+    });
+
+    it('should call post handler', function(done) {
+      var md = new ApiMiddleware();
+
+      md.setPostHandler('load', function(payload) {
+        return { called: true };
+      });
+      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
+        assert(payload.called);
+        done();
+      }, done);
+    });
 
     it('should call handlers in order', function(done) {
       var md = new ApiMiddleware();
 
-      md.addHandler('load', 'Foo', function(payload) {
-        return { data: 1 };
+      md.setPreHandler('load', function(payload) {
+        assert(payload.count === 0);
+        return { count: payload.count + 1 };
+      });
+      md.setHandler('load', 'Foo', function(payload) {
+        assert(payload.count === 1);
+        return { count: payload.count + 1 };
+      });
+      md.setPostHandler('load', function(payload) {
+        assert(payload.count === 2);
+        return { count: payload.count + 1 };
       });
 
-      md.addHandler('load', 'Foo', function(payload) {
-        return { data: payload.data + 1 };
-      });
-
-      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
-        assert(payload.data === 2);
+      md.handleAction('load', {}, { name: 'Foo' }, { count: 0 }).then(function(payload) {
+        assert(payload.count === 3);
         done();
       }, done);
     });
@@ -56,7 +84,7 @@ describe('cores-server', function() {
     it('should propagate error', function(done) {
       var md = new ApiMiddleware();
 
-      md.addHandler('load', 'Foo', function(payload) {
+      md.setHandler('load', 'Foo', function(payload) {
         throw new Error('foo');
       });
 
@@ -72,10 +100,12 @@ describe('cores-server', function() {
     it('should include request in context of promise', function(done) {
       var md = new ApiMiddleware();
 
-      md.addHandler('load', 'Foo', function(payload) {
-        assert(this.getContext());
-        assert(this.getContext().request);
-        assert(this.getContext().request.iAmARequest);
+      md.setHandler('load', 'Foo', function(payload) {
+        var c = this.getContext();
+        assert(c);
+        assert(c.request);
+        assert(c.request.iAmARequest);
+        assert(c.action === 'load');
         return payload;
       });
 
@@ -175,7 +205,7 @@ describe('cores-server', function() {
 
     it('should call create handler', function(done) {
 
-      server.app.api.addHandler('create', 'Foo', function(payload) {
+      server.app.api.setHandler('create', 'Foo', function(payload) {
         payload.create = true;
         return Q.resolve(payload);
       });
@@ -196,7 +226,7 @@ describe('cores-server', function() {
 
     it('should call update handler', function(done) {
 
-      server.app.api.addHandler('update', 'Foo', function(payload) {
+      server.app.api.setHandler('update', 'Foo', function(payload) {
         payload.update = true;
         return Q.resolve(payload);
       });
@@ -217,7 +247,7 @@ describe('cores-server', function() {
 
     it('should call load handler', function(done) {
 
-      server.app.api.addHandler('load', 'Foo', function(payload) {
+      server.app.api.setHandler('load', 'Foo', function(payload) {
         payload.load = true;
         return Q.resolve(payload);
       });
@@ -236,7 +266,7 @@ describe('cores-server', function() {
 
     it('should call views handler', function(done) {
 
-      server.app.api.addHandler('views', 'Foo', function(payload) {
+      server.app.api.setHandler('views', 'Foo', function(payload) {
         payload.views = true;
         return Q.resolve(payload);
       });
