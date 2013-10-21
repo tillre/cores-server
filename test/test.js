@@ -106,6 +106,8 @@ describe('cores-server', function() {
         assert(c.request);
         assert(c.request.iAmARequest);
         assert(c.action === 'load');
+        assert(c.resource);
+        assert(c.resource.name === 'Foo');
         return payload;
       });
 
