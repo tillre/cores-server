@@ -19,10 +19,6 @@ function createServer(options) {
       name: 'cores'
     },
     resourcesDir: '',
-    api: {
-      path: '',
-      auth: false
-    },
     debug: false
   };
   options = Hapi.utils.applyToDefaults(defaults, options || {});
@@ -33,27 +29,39 @@ function createServer(options) {
     options.server.port,
     options.server.options
   );
-  server.app.api = new ApiMiddleware();
 
   // create the db and resource layer
   var db = Nano(options.db.url).use(options.db.name);
   var cores = Cores(db);
+  server.app.cores = cores;
 
   if (!options.resourcesDir) {
     Q.resolve(server);
   }
 
   return loadResources(cores, options.resourcesDir).then(function(resources) {
-
     server.app.resources = resources;
+    return server;
+  });
+}
 
-    return Q.bindPromise(server.pack.require, server.pack)('cores-hapi', {
-      cores: cores,
-      resources: resources,
-      handlers: server.app.api.baseHandlers,
-      basePath: options.api.path,
-      auth: options.api.auth
-    });
+
+function createApi(server, options) {
+
+  var defaults = {
+    path: '',
+    auth: false
+  };
+  options = Hapi.utils.applyToDefaults(defaults, options || {});
+
+  var api = server.app.api = new ApiMiddleware();
+
+  return Q.bindPromise(server.pack.require, server.pack)('cores-hapi', {
+    cores: server.app.cores,
+    resources: server.app.resources,
+    handlers: api.baseHandlers,
+    basePath: options.path,
+    auth: options.auth
 
   }).then(function() {
     return server;
@@ -61,4 +69,8 @@ function createServer(options) {
 }
 
 
-module.exports = createServer;
+// module.exports = createServer;
+module.exports = {
+  createServer: createServer,
+  createApi: createApi
+};

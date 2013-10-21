@@ -5,7 +5,7 @@ var Q = require('kew');
 var Nano = require('nano');
 
 var ApiMiddleware = require('../lib/api-middleware.js');
-var createServer = require('../index.js');
+var cs = require('../index.js');
 
 
 describe('cores-server', function() {
@@ -121,7 +121,7 @@ describe('cores-server', function() {
 
 
     it('should create the server', function(done) {
-      createServer().then(function(server) {
+      cs.createServer().then(function(server) {
         assert(server);
         done();
       }, done);
@@ -132,10 +132,13 @@ describe('cores-server', function() {
     var document;
 
     it('should create the server and load models', function(done) {
-      createServer(
-        { resourcesDir: __dirname + '/resources', db: { name: dbName }, api: { path: '/api' }}
+      cs.createServer(
+        { resourcesDir: __dirname + '/resources', db: { name: dbName }}
 
-      ).then(function(s) {
+      ).then(function(server) {
+        return cs.createApi(server, { path: '/api' });
+
+      }).then(function(s) {
         assert(s);
         assert(s.app.resources.Foo);
         server = s;
@@ -145,7 +148,7 @@ describe('cores-server', function() {
 
 
     it('should not create the server when resources not exists', function(done) {
-      createServer(
+      cs.createServer(
         { resourcesDir: __dirname + '/foooo', db: { name: dbName }}
       ).then(function(s) {
         assert(false);
