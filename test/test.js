@@ -133,7 +133,7 @@ describe('cores-server', function() {
 
     it('should create the server and load models', function(done) {
       createServer(
-        { resourcesDir: __dirname + '/resources', db: { name: dbName }, apiPath: '/api' }
+        { resourcesDir: __dirname + '/resources', db: { name: dbName }, api: { path: '/api' }}
 
       ).then(function(s) {
         assert(s);

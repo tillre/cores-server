@@ -18,8 +18,11 @@ function createServer(options) {
       url: 'http://127.0.0.1:5984',
       name: 'cores'
     },
-    apiPath: '',
-    auth: false,
+    resourcesDir: '',
+    api: {
+      path: '',
+      auth: false
+    },
     debug: false
   };
   options = Hapi.utils.applyToDefaults(defaults, options || {});
@@ -36,6 +39,10 @@ function createServer(options) {
   var db = Nano(options.db.url).use(options.db.name);
   var cores = Cores(db);
 
+  if (!options.resourcesDir) {
+    Q.resolve(server);
+  }
+
   return loadResources(cores, options.resourcesDir).then(function(resources) {
 
     server.app.resources = resources;
@@ -44,8 +51,8 @@ function createServer(options) {
       cores: cores,
       resources: resources,
       handlers: server.app.api.baseHandlers,
-      basePath: options.apiPath,
-      auth: options.auth
+      basePath: options.api.path,
+      auth: options.api.auth
     });
 
   }).then(function() {
