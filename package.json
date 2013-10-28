@@ -1,6 +1,6 @@
 {
   "name": "cores-server",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "cores server",
   "main": "index.js",
   "scripts": {
@@ -27,15 +27,14 @@
     }
   ],
   "dependencies": {
-    "nano": "3.x.x",
     "jski": "~0.3.x",
-    "walk-fs": "0.0.x",
     "kew": "~0.1.x",
     "hapi": "~1.x.x",
-    "cores": "~0.4.x",
-    "cores-hapi": "~0.4.x"
+    "cores": "~0.5.x",
+    "cores-hapi": "~0.5.x"
   },
   "devDependencies": {
+    "nano": "3.x.x",
     "mocha": "1.x.x"
   }
 }

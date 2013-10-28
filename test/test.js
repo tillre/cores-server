@@ -1,133 +1,19 @@
 /*global before after beforeEach afterEach describe it*/
 var assert = require('assert');
-var Util = require('util');
+var util = require('util');
 var Q = require('kew');
-var Nano = require('nano');
+var nano = require('nano')('http://127.0.0.1:5984');
 
-var ApiMiddleware = require('../lib/api-middleware.js');
 var cs = require('../index.js');
 
 
 describe('cores-server', function() {
 
-  describe('ApiMiddleware', function() {
-
-    it('should pass on payload', function(done) {
-      var md = new ApiMiddleware();
-      md.handleAction('load', {}, { name: 'Foo' }, { data: 123 }).then(function(payload) {
-        assert(payload.data === 123);
-        done();
-      }, done);
-    });
-
-
-    it('should call handler', function(done) {
-      var md = new ApiMiddleware();
-
-      md.setHandler('load', 'Foo', function(payload) {
-        return { called: true };
-      });
-
-      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
-        assert(payload.called);
-        done();
-      }, done);
-    });
-
-    it('should call pre handler', function(done) {
-      var md = new ApiMiddleware();
-
-      md.setPreHandler('load', function(payload) {
-        return { called: true };
-      });
-      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
-        assert(payload.called);
-        done();
-      }, done);
-    });
-
-    it('should call post handler', function(done) {
-      var md = new ApiMiddleware();
-
-      md.setPostHandler('load', function(payload) {
-        return { called: true };
-      });
-      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
-        assert(payload.called);
-        done();
-      }, done);
-    });
-
-    it('should call handlers in order', function(done) {
-      var md = new ApiMiddleware();
-
-      md.setPreHandler('load', function(payload) {
-        assert(payload.count === 0);
-        return { count: payload.count + 1 };
-      });
-      md.setHandler('load', 'Foo', function(payload) {
-        assert(payload.count === 1);
-        return { count: payload.count + 1 };
-      });
-      md.setPostHandler('load', function(payload) {
-        assert(payload.count === 2);
-        return { count: payload.count + 1 };
-      });
-
-      md.handleAction('load', {}, { name: 'Foo' }, { count: 0 }).then(function(payload) {
-        assert(payload.count === 3);
-        done();
-      }, done);
-    });
-
-
-    it('should propagate error', function(done) {
-      var md = new ApiMiddleware();
-
-      md.setHandler('load', 'Foo', function(payload) {
-        throw new Error('foo');
-      });
-
-      md.handleAction('load', {}, { name: 'Foo' }, {}).then(function(payload) {
-        assert(false);
-      }, function(err) {
-        assert(Util.isError(err));
-        done();
-      });
-    });
-
-
-    it('should include request in context of promise', function(done) {
-      var md = new ApiMiddleware();
-
-      md.setHandler('load', 'Foo', function(payload) {
-        var c = this.getContext();
-        assert(c);
-        assert(c.request);
-        assert(c.request.iAmARequest);
-        assert(c.action === 'load');
-        assert(c.resource);
-        assert(c.resource.name === 'Foo');
-        return payload;
-      });
-
-      md.handleAction('load', {iAmARequest: true}, { name: 'Foo' }, { data: 123 }).then(function(payload) {
-        assert(this.getContext());
-        assert(this.getContext().request);
-        assert(this.getContext().request.iAmARequest);
-        done();
-      }, done);
-    });
-
-  });
-
-
   describe('createServer', function() {
 
     // create db before tests and destroy afterwards
-    var nano = Nano('http://127.0.0.1:5984');
+
     var dbName = 'test-cores-server';
-    var db = nano.use(dbName);
 
     before(function(done) {
       // setup test db
@@ -162,17 +48,18 @@ describe('cores-server', function() {
 
     var server;
     var document;
+    var dbConfig = 'http://localhost:5984/' + dbName;
 
-    it('should create the server and load models', function(done) {
+    it('should create the server and load resources', function(done) {
       cs.createServer(
-        { resourcesDir: __dirname + '/resources', db: { name: dbName }}
+        { resourcesDir: __dirname + '/resources', db: dbConfig }
 
       ).then(function(server) {
         return cs.createApi(server, { path: '/api' });
 
       }).then(function(s) {
         assert(s);
-        assert(s.app.resources.Foo);
+        assert(s.app.cores.resources.Foo);
         server = s;
         done();
       }, done);
@@ -181,11 +68,11 @@ describe('cores-server', function() {
 
     it('should not create the server when resources not exists', function(done) {
       cs.createServer(
-        { resourcesDir: __dirname + '/foooo', db: { name: dbName }}
+        { resourcesDir: __dirname + '/foooo', db: dbConfig }
       ).then(function(s) {
         assert(false);
       }, function(err) {
-        assert(Util.isError(err));
+        assert(util.isError(err));
         done();
       });
     });
@@ -207,7 +94,7 @@ describe('cores-server', function() {
 
     it('should call create handler', function(done) {
 
-      server.app.api.setHandler('create', 'Foo', function(payload) {
+      server.plugins['cores-hapi'].setHandler('create', 'Foo', function(payload) {
         payload.create = true;
         return Q.resolve(payload);
       });
@@ -228,7 +115,7 @@ describe('cores-server', function() {
 
     it('should call update handler', function(done) {
 
-      server.app.api.setHandler('update', 'Foo', function(payload) {
+      server.plugins['cores-hapi'].setHandler('update', 'Foo', function(payload) {
         payload.update = true;
         return Q.resolve(payload);
       });
@@ -249,7 +136,7 @@ describe('cores-server', function() {
 
     it('should call load handler', function(done) {
 
-      server.app.api.setHandler('load', 'Foo', function(payload) {
+      server.plugins['cores-hapi'].setHandler('load', 'Foo', function(payload) {
         payload.load = true;
         return Q.resolve(payload);
       });
@@ -268,7 +155,7 @@ describe('cores-server', function() {
 
     it('should call views handler', function(done) {
 
-      server.app.api.setHandler('views', 'Foo', function(payload) {
+      server.plugins['cores-hapi'].setHandler('views', 'Foo', function(payload) {
         payload.views = true;
         return Q.resolve(payload);
       });
